@@ -1,37 +1,42 @@
-name: Deploy to Vercel
+name: Deploy Django Application
 
 on:
   push:
     branches:
-      - main # Trigger on pushes to the main branch
-  pull_request:
-    branches:
-      - main # Trigger on PRs targeting the main branch
+      - main
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    
+
     steps:
+    # Checkout the code
     - name: Checkout code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v2
 
-    - name: Set up Node.js
-      uses: actions/setup-node@v3
+    # Set up Python
+    - name: Set up Python
+      uses: actions/setup-python@v2
       with:
-        node-version: '16'  # Use the appropriate Node.js version
+        python-version: '3.9'  # You can change this to your Python version
 
+    # Install dependencies (you should have a requirements.txt)
     - name: Install dependencies
-      run: npm install
-
-    - name: Run tests
-      run: npm test # Add your test script here (optional)
-
-    - name: Deploy to Vercel
-      env:
-        VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-        VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-        VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
       run: |
-        npm install -g vercel
-        vercel --prod --token $VERCEL_TOKEN
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    # Run migrations (if needed)
+    - name: Run migrations
+      run: |
+        python manage.py migrate
+
+    # Collect static files (if needed)
+    - name: Collect static files
+      run: |
+        python manage.py collectstatic --noinput
+
+    # Deploy or test your application (this part can vary depending on your setup)
+    - name: Deploy (or other tasks)
+      run: |
+        python manage.py runserver  # Replace with your deployment steps
